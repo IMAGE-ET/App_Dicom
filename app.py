@@ -366,10 +366,8 @@ class Window(QWidget):
         self.currentValueDisplay = QLabel("Current image : {0}".format(self.currentImage))
 
         self.plotImage = PlotDicom(self, width=1.3, height=1.3)
-        self.plotImage.hide()
 
         self.plotSignal = PlotSignal(self, width=1.3, height=1.3)
-        self.plotSignal.hide()
 
         vbox1 = QVBoxLayout()
         vbox1.addWidget(importButton)
@@ -413,7 +411,6 @@ class Window(QWidget):
         fname = QFileDialog.getOpenFileNames(self, 'Open file', '/', 'DICOM images (*IMA)')
         if fname[0]:
             self.hasData = True
-            self.plotImage.show()
             for name_img in fname[0]:
                 self.dicomImages.add(name_img)
             self.plotImage.plotDicom(self.dicomImages.element(self.currentImage), "Image {0}".format(self.currentImage))
@@ -433,8 +430,6 @@ class Window(QWidget):
         self.currentImageChanged(0)
         self.maxSliderDisplay.setText("Max : {0}".format(0))
         self.defineValue.setValidator(QIntValidator(0, 0))
-        self.plotImage.hide()
-        self.plotSignal.hide()
 
 
     def showSignal(self):
@@ -443,7 +438,6 @@ class Window(QWidget):
         display_position, posX, posY = self.plotImage.position()
         legend = []
         if display_position:
-            self.plotSignal.show()
             dataX = range(self.dicomImages.length())
             if (self.plotImage.returnPointsMode() == "one") | (self.plotImage.returnPointsMode() == "multiple"):
                 for i in range(len(posX)):
@@ -513,7 +507,6 @@ class Window(QWidget):
         if self.hasData:
             self.plotImage.clearPositions()
             self.plotSignal.clear()
-            self.plotSignal.hide()
 
 
 def resource_path(relative_path):
