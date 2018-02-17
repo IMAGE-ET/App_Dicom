@@ -75,7 +75,6 @@ class PlotDicom(FigureCanvas):
         self.listNumPointsRectangle = []
 
 
-
     def clear(self):
 
         self.axes.cla()
@@ -121,7 +120,6 @@ class PlotDicom(FigureCanvas):
                 for i in range(len(self.listNumPointsRectangle)):
                     self.listPlotPoints[i].pop(0).remove()
             self.listPlotPoints = []
-
 
 
     def onPress(self, event):
@@ -464,7 +462,6 @@ class Window(QWidget):
                         dataY.append(value)
                     legend.append("Mean value ({0},{1}),({2},{3})".format(minPosX,minPosY,maxPosX,maxPosY))
                     self.plotSignal.plotSig(dataX, dataY, "Evolution", legend)
-
 
 
     def valueSliderChanged(self):
