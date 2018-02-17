@@ -106,10 +106,10 @@ class PlotDicom(FigureCanvas):
                 for i in range(len(self.listNumPointsRectangle)):
                     indexEndRectangle = self.listNumPointsRectangle[i]
                     if i == 0:
-                        drawPos = self.axes.plot(self.posX[:indexEndRectangle], self.posY[:indexEndRectangle], color=self.colors[i], marker="+", alpha=self.alpha)
+                        indexStartRectangle = 0
                     else:
                         indexStartRectangle = self.listNumPointsRectangle[i-1]
-                        drawPos = self.axes.plot(self.posX[indexStartRectangle:indexEndRectangle], self.posY[indexStartRectangle:indexEndRectangle], color=self.colors[i], marker="+", alpha=self.alpha)
+                    drawPos = self.axes.plot(self.posX[indexStartRectangle:indexEndRectangle], self.posY[indexStartRectangle:indexEndRectangle], color=self.colors[i], marker="+", alpha=self.alpha)
                     self.listPlotPoints.append(drawPos)
         self.draw()
         if self.posX != []:
@@ -190,10 +190,10 @@ class PlotDicom(FigureCanvas):
             for i in range(len(self.listNumPointsRectangle)):
                 indexEndRectangle = self.listNumPointsRectangle[i]
                 if i == 0:
-                    drawPos = self.axes.plot(self.posX[:indexEndRectangle], self.posY[:indexEndRectangle], color=self.colors[i], marker=".", alpha=self.alpha)
+                    indexStartRectangle = 0
                 else:
                     indexStartRectangle = self.listNumPointsRectangle[i-1]
-                    drawPos = self.axes.plot(self.posX[indexStartRectangle:indexEndRectangle], self.posY[indexStartRectangle:indexEndRectangle], color=self.colors[i], marker=".", alpha=self.alpha)
+                drawPos = self.axes.plot(self.posX[indexStartRectangle:indexEndRectangle], self.posY[indexStartRectangle:indexEndRectangle], color=self.colors[i], marker=".", alpha=self.alpha)
                 self.listPlotPoints.append(drawPos)
             drawPos = self.axes.plot(self.posX[indexStartNewRectangle:], self.posY[indexStartNewRectangle:], color=self.colors[len(self.listNumPointsRectangle)], marker=".", alpha=self.alpha)
             self.draw()
@@ -210,10 +210,10 @@ class PlotDicom(FigureCanvas):
             for i in range(len(self.listNumPointsRectangle)):
                 indexEndRectangle = self.listNumPointsRectangle[i]
                 if i == 0:
-                    drawPos = self.axes.plot(self.posX[:indexEndRectangle], self.posY[:indexEndRectangle], color=self.colors[i], marker="+", alpha=self.alpha)
+                    indexStartRectangle = 0
                 else:
                     indexStartRectangle = self.listNumPointsRectangle[i-1]
-                    drawPos = self.axes.plot(self.posX[indexStartRectangle:indexEndRectangle], self.posY[indexStartRectangle:indexEndRectangle], color=self.colors[i], marker=".", alpha=self.alpha)
+                drawPos = self.axes.plot(self.posX[indexStartRectangle:indexEndRectangle], self.posY[indexStartRectangle:indexEndRectangle], color=self.colors[i], marker=".", alpha=self.alpha)
                 self.listPlotPoints.append(drawPos)
             self.draw()
             for i in range(len(self.listNumPointsRectangle)):
@@ -452,10 +452,10 @@ class Window(QWidget):
                 for i in range(len(listNumPointsRectangle)):
                     indexEndRectangle = listNumPointsRectangle[i]
                     if i == 0:
-                        minPosX, minPosY, maxPosX, maxPosY = min(posX[:indexEndRectangle]), min(posY[:indexEndRectangle]), max(posX[:indexEndRectangle]), max(posY[:indexEndRectangle])
+                        indexStartRectangle = 0
                     else:
                         indexStartRectangle = listNumPointsRectangle[i-1]
-                        minPosX, minPosY, maxPosX, maxPosY = min(posX[indexStartRectangle:indexEndRectangle]), min(posY[indexStartRectangle:indexEndRectangle]), max(posX[indexStartRectangle:indexEndRectangle]), max(posY[indexStartRectangle:indexEndRectangle])
+                    minPosX, minPosY, maxPosX, maxPosY = min(posX[indexStartRectangle:indexEndRectangle]), min(posY[indexStartRectangle:indexEndRectangle]), max(posX[indexStartRectangle:indexEndRectangle]), max(posY[indexStartRectangle:indexEndRectangle])
                     dataY = []
                     for element in dataX:
                         value = self.dicomImages.meanValue(element, minPosX, minPosY, maxPosX, maxPosY)
