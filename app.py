@@ -71,7 +71,7 @@ class PlotDicom(FigureCanvas):
         self.alpha = 1
         self.listPlotPoints = []
         hsv = plt.get_cmap('hsv')
-        self.colors = hsv(np.linspace(0,1,20))
+        self.colors = hsv(np.linspace(0,1,30))
         self.listNumPointsRectangle = []
 
 
@@ -277,7 +277,7 @@ class PlotSignal(FigureCanvas):
 
         self.mode = "one"
         hsv = plt.get_cmap('hsv')
-        self.colors = hsv(np.linspace(0,1,20))
+        self.colors = hsv(np.linspace(0,1,30))
         self.numPlot = 0
 
 
