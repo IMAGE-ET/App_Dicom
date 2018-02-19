@@ -40,7 +40,8 @@ class DicomImages():
 
     def valuePixel(self, numElement, posX, posY):
 
-        value = self.images[numElement][posX, posY]
+        sizeY, sizeX = self.images[numElement].shape
+        value = self.images[numElement][sizeY-posY, posX]
         return value
 
 
@@ -92,7 +93,7 @@ class PlotDicom(FigureCanvas):
         self.title = title
         self.data = data
         self.axes.cla()
-        self.ax = self.axes.imshow(self.data, cmap="gray")
+        self.ax = self.axes.imshow(self.data, cmap="gray", extent=[1,self.data.shape[0],1,self.data.shape[1]])
         self.fig.canvas.mpl_connect('button_press_event', self.onPress)
         self.fig.canvas.mpl_connect('motion_notify_event', self.onMotion)
         self.fig.canvas.mpl_connect('button_release_event', self.onRelease)
