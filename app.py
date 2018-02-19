@@ -47,7 +47,8 @@ class DicomImages():
 
     def meanValue(self, numElement, posX1, posY1, posX2, posY2):
 
-        value = np.mean(self.images[numElement][posX1:posX2+1,posY1:posY2+1])
+        sizeY, sizeX = self.images[numElement].shape
+        value = np.mean(self.images[numElement][sizeY-posY1:sizeY-posY2+1,posX1:posX2+1])
         return value
 
 
