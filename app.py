@@ -8,6 +8,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.filters import threshold_otsu
 
 
 
@@ -16,16 +17,25 @@ class DicomImages():
     def __init__(self):
 
         self.images = []
+        self.segmentedImages = []
 
 
     def add(self, name_img):
 
-        self.images.append(dicom.read_file(name_img).pixel_array)
+        image = dicom.read_file(name_img).pixel_array
+        if self.images == []:
+            threshold = threshold_otsu(image)
+            self.mask = image<threshold
+        self.images.append(image)
+        image = dicom.read_file(name_img).pixel_array
+        image[self.mask] = 0
+        self.segmentedImages.append(image)
 
 
     def clear(self):
 
         self.images = []
+        self.segmentedImages = []
 
 
     def length(self):
@@ -33,22 +43,31 @@ class DicomImages():
         return len(self.images)
 
 
-    def element(self, numElement):
+    def element(self, numElement, mode):
 
-        return self.images[numElement]
+        if mode == "normal":
+            return self.images[numElement]
+        elif mode == "segmented":
+            return self.segmentedImages[numElement]
 
 
-    def valuePixel(self, numElement, posX, posY):
+    def valuePixel(self, numElement, posX, posY, mode):
 
         sizeY, sizeX = self.images[numElement].shape
-        value = self.images[numElement][sizeY-posY, posX]
+        if mode == "normal":
+            value = self.images[numElement][sizeY-posY, posX]
+        elif mode == "segmented":
+            value = self.segmentedImages[numElement][sizeY-posY, posX]
         return value
 
 
-    def meanValue(self, numElement, posX1, posY1, posX2, posY2):
+    def meanValue(self, numElement, posX1, posY1, posX2, posY2, mode):
 
         sizeY, sizeX = self.images[numElement].shape
-        value = np.mean(self.images[numElement][sizeY-posY1:sizeY-posY2+1,posX1:posX2+1])
+        if mode == "normal":
+            value = np.mean(self.images[numElement][sizeY-posY1:sizeY-posY2+1,posX1:posX2+1])
+        elif mode == "segmented":
+            value = np.mean(self.segmentedImages[numElement][sizeY-posY1:sizeY-posY2+1,posX1:posX2+1])
         return value
 
 
@@ -328,6 +347,7 @@ class Window(QWidget):
         super().__init__()
         self.dicomImages = DicomImages()
         self.currentImage = 0
+        self.segmentationMode = "normal"
         self.hasData = False
         self.initUI()
 
@@ -351,6 +371,9 @@ class Window(QWidget):
 
         self.clearPositionsButton = QPushButton('Clear positions', self)
         self.clearPositionsButton.clicked.connect(self.clearPositionsTicks)
+
+        self.segmentedModeButton = QPushButton('Segmented', self)
+        self.segmentedModeButton.clicked.connect(self.segmentedModeSwitch)
 
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setMaximum(0)
@@ -380,6 +403,7 @@ class Window(QWidget):
         vbox1.addWidget(self.holdButton)
         vbox1.addWidget(self.rectangleButton)
         vbox1.addWidget(self.clearPositionsButton)
+        vbox1.addWidget(self.segmentedModeButton)
 
         hbox1 = QHBoxLayout()
         hbox1.addWidget(self.minSliderDisplay)
@@ -417,7 +441,7 @@ class Window(QWidget):
             self.hasData = True
             for name_img in fname[0]:
                 self.dicomImages.add(name_img)
-            self.plotImage.plotDicom(self.dicomImages.element(self.currentImage), "Image {0}".format(self.currentImage))
+            self.refreshImage()
             self.slider.setMinimum(0)
             self.slider.setMaximum(self.dicomImages.length()-1)
             self.maxSliderDisplay.setText("Max : {0}".format(self.slider.maximum()))
@@ -451,7 +475,7 @@ class Window(QWidget):
                 for i in range(len(posX)):
                     dataY = []
                     for element in dataX:
-                        value = self.dicomImages.valuePixel(element, posX[i], posY[i])
+                        value = self.dicomImages.valuePixel(element, posX[i], posY[i], self.segmentationMode)
                         dataY.append(value)
                     legend.append("Pixel ({0},{1})".format(posX[i],posY[i]))
                     self.plotSignal.plotSig(dataX, dataY, "Evolution of pixel value", legend)
@@ -466,7 +490,7 @@ class Window(QWidget):
                     minPosX, minPosY, maxPosX, maxPosY = min(posX[indexStartRectangle:indexEndRectangle]), min(posY[indexStartRectangle:indexEndRectangle]), max(posX[indexStartRectangle:indexEndRectangle]), max(posY[indexStartRectangle:indexEndRectangle])
                     dataY = []
                     for element in dataX:
-                        value = self.dicomImages.meanValue(element, minPosX, minPosY, maxPosX, maxPosY)
+                        value = self.dicomImages.meanValue(element, minPosX, minPosY, maxPosX, maxPosY, self.segmentationMode)
                         dataY.append(value)
                     legend.append("Mean value ({0},{1}),({2},{3})".format(minPosX,minPosY,maxPosX,maxPosY))
                     self.plotSignal.plotSig(dataX, dataY, "Evolution", legend)
@@ -478,8 +502,7 @@ class Window(QWidget):
         self.currentValueDisplay.setText("Current image : {0}".format(self.currentImage))
         self.defineValue.setText(str(self.currentImage))
         if self.hasData:
-            self.plotImage.plotDicom(self.dicomImages.element(self.currentImage), "Image {0}".format(self.currentImage))
-
+            self.refreshImage()
 
     def currentImageChanged(self, value):
 
@@ -515,6 +538,25 @@ class Window(QWidget):
         if self.hasData:
             self.plotImage.clearPositions()
             self.plotSignal.clear()
+
+
+    def segmentedModeSwitch(self):
+
+        sender = self.sender()
+        if sender.text()=="Segmented":
+            self.segmentationMode = "segmented"
+            self.segmentedModeButton.setText("Normal")
+        elif sender.text()=="Normal":
+            self.segmentationMode = "normal"
+            self.segmentedModeButton.setText("Segmented")
+        if self.hasData:
+            self.refreshImage()
+
+
+    def refreshImage(self):
+
+        self.plotImage.plotDicom(self.dicomImages.element(self.currentImage, self.segmentationMode), "Image {0}".format(self.currentImage))
+
 
 
 def resource_path(relative_path):
