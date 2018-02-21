@@ -9,6 +9,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.filters import threshold_otsu
+from skimage.morphology import reconstruction
 
 
 
@@ -24,8 +25,11 @@ class DicomImages():
 
         image = dicom.read_file(name_img).pixel_array
         if self.images == []:
-            threshold = threshold_otsu(image)
-            self.mask = image<threshold
+            seed = np.copy(image)
+            seed[1:-1, 1:-1] = image.max()
+            filledImage = reconstruction(seed, image, method="erosion")
+            threshold = threshold_otsu(filledImage)
+            self.mask = filledImage<threshold
         self.images.append(image)
         image = dicom.read_file(name_img).pixel_array
         image[self.mask] = 0
@@ -65,9 +69,9 @@ class DicomImages():
 
         sizeY, sizeX = self.images[numElement].shape
         if mode == "normal":
-            value = np.mean(self.images[numElement][sizeY-posY1:sizeY-posY2+1,posX1:posX2+1])
+            value = np.mean(self.images[numElement][sizeY-posY2:sizeY-posY1+1,posX1:posX2+1])
         elif mode == "segmented":
-            value = np.mean(self.segmentedImages[numElement][sizeY-posY1:sizeY-posY2+1,posX1:posX2+1])
+            value = np.mean(self.segmentedImages[numElement][sizeY-posY2:sizeY-posY1+1,posX1:posX2+1])
         return value
 
 
